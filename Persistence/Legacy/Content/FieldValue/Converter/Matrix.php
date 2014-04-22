@@ -1,28 +1,38 @@
 <?php
 /**
- * @copyright Copyright (C) 2013 eZ Systems AS. All rights reserved.
- * @license http://ez.no/eZPublish/Licenses/eZ-Trial-and-Test-License-Agreement-eZ-TTL-v2.0 eZ Trial and Test License Agreement Version 2.0
+ * Converter for Matrix FieldType
+ * User: joe
+ * Date: 12/12/13
+ * Time: 8:59 PM
+ *
+ * @copyright Copyright (C) 1999-2013 eZ Systems AS. All rights reserved.
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
+ * @version //autogentag//
  */
-
 namespace EzSystems\MatrixBundle\Persistence\Legacy\Content\FieldValue\Converter;
 
 use eZ\Publish\Core\Persistence\Legacy\Content\FieldValue\Converter;
-use eZ\Publish\SPI\Persistence\Content\FieldValue;
-use eZ\Publish\Core\Persistence\Legacy\Content\StorageFieldValue;
-use eZ\Publish\SPI\Persistence\Content\Type\FieldDefinition;
 use eZ\Publish\Core\Persistence\Legacy\Content\StorageFieldDefinition;
-use eZ\Publish\Core\FieldType\FieldSettings;
+use eZ\Publish\Core\Persistence\Legacy\Content\StorageFieldValue;
+use eZ\Publish\SPI\Persistence\Content\FieldValue;
+use eZ\Publish\SPI\Persistence\Content\Type\FieldDefinition;
 use DOMDocument;
 
+/**
+ * Class Matrix
+ * Handles conversion of Matrix fields to and from the persistence layer.
+ *
+ * @package EzSystems\MatrixBundle\Persistence\Legacy\Content\FieldValue\Converter
+ */
 class Matrix implements Converter
 {
+
     /**
      * Factory for current class
      *
      * @note Class should instead be configured as service if it gains dependencies.
      *
-     * @static
-     * @return Url
+     * @return Matrix
      */
     public static function create()
     {
@@ -48,7 +58,7 @@ class Matrix implements Converter
      */
     public function toFieldValue( StorageFieldValue $value, FieldValue $fieldValue )
     {
-        $fieldValue->data = ( $value->dataText ? $this->restoreFromXmlString( $value->dataText ) : Value::EMPTY_VALUE );
+        $fieldValue->data = $this->restoreValueFromXmlString( $value->dataText );
     }
 
     /**
@@ -59,9 +69,7 @@ class Matrix implements Converter
      */
     public function toStorageFieldDefinition( FieldDefinition $fieldDef, StorageFieldDefinition $storageDef )
     {
-        /// @todo what about empty value???
-        $storageDef->dataText5 = $this->generateDefinitionXmlString( $fieldDef->fieldTypeConstraints->fieldSettings['columns'] );
-        $storageDef->dataInt1 = $fieldDef->fieldTypeConstraints->fieldSettings['defaultRows'];
+        // Nothing to store
     }
 
     /**
@@ -72,19 +80,7 @@ class Matrix implements Converter
      */
     public function toFieldDefinition( StorageFieldDefinition $storageDef, FieldDefinition $fieldDef )
     {
-        $cols = array();
-        if ( !empty( $storageDef->dataText5 ) )
-        {
-            $cols = $this->restoreDefinitionFromXmlString( $storageDef->dataText5 );
-        }
-
-        $fieldDef->fieldTypeConstraints->fieldSettings = new FieldSettings(
-            array(
-                'defaultRows' => $storageDef->dataInt1,
-                'columns' => $cols,
-                //'name' => '',
-            )
-        );
+        $fieldDef->defaultValue->data = array();
     }
 
     /**
@@ -94,132 +90,159 @@ class Matrix implements Converter
      * "sort_key_int" or "sort_key_string". This column is then used for
      * filtering and sorting for this type.
      *
-     * @return false
+     * @return string
      */
     public function getIndexColumn()
     {
         return false;
     }
 
-    protected function generateXmlString( array $matrixValue )
+    /**
+     * Generates XML string from $authorValue to be stored in storage engine
+     *
+     * @param array $authorValue
+     *
+     * @return string The generated XML string
+     */
+    private function generateXmlString( array $matrixValue )
     {
-        $domDoc = new DOMDocument( '1.0', 'utf-8' );
-        $root =  $domDoc->createElement( 'ezmatrix' );
-        $nameElement = $domDoc->createElement( 'name' );
-        $nameElement->appendchild( $domDoc->createTextNode( $matrixValue['name'] ) );
-        $root->appendchild( $nameElement );
-        $colsElement = $domDoc->createElement( 'columns' );
-        $colsElement->setAttribute( "number", count( $matrixValue['columns'] ) );
-        $root->appendchild( $colsElement );
-        foreach( $matrixValue['columns'] as $idx => $colDef )
+        /* Sample XML:
+        <?xml version="1.0" encoding="utf-8"?>
+        <ezmatrix>
+            <name/>
+            <columns number="4">
+                <column id="beverage" num="0">Beverage</column>
+                <column id="appetizer" num="1">Appetizer</column>
+                <column id="main" num="2">Main Course</column>
+                <column id="dessert" num="3">Dessert</column>
+            </columns>
+            <rows number="2"/>
+            <c>Water</c>
+            <c>Salad</c>
+            <c>Steak</c>
+            <c>Pie</c>
+            <c>Beer</c>
+            <c>Wings</c>
+            <c>Pizza</c>
+            <c>Ice Cream</c>
+        </ezmatrix>
+        */
+        $doc = new DOMDocument( '1.0', 'utf-8' );
+
+        $root = $doc->createElement( 'ezmatrix' );
+        $doc->appendChild( $root );
+
+        $root->appendChild( $doc->createElement( 'name' ) );
+
+        $columns = $doc->createElement( 'columns' );
+        $columns->setAttribute( 'number', count( $matrixValue['columns'] ) );
+
+        $root->appendChild( $columns );
+
+        foreach ( $matrixValue['columns'] as $column )
         {
-            $colElement = $domDoc->createElement( 'column', $colDef['name'] );
-            $colElement->setAttribute( 'id', $colDef['identifier'] );
-            $colElement->setAttribute( 'num', $idx );
-            $colsElement->appendchild( $colElement );
+            $columnNode = $doc->createElement( 'column' );
+            $columnNode->setAttribute( 'num', $column['num'] );
+            $columnNode->setAttribute( 'id', $column['id'] );
+            $nameNode = $doc->createTextNode( $column['name'] );
+            $columnNode->appendChild( $nameNode );
+
+            $columns->appendChild( $columnNode );
+
+            unset( $columnNode );
+            unset( $nameNode );
         }
-        $rowsElement = $domDoc->createElement( 'rows' );
-        $rowsElement->setAttribute( "number", count( $matrixValue['rows'] ) );
-        $root->appendchild( $rowsElement );
-        foreach( $matrixValue['rows'] as $idx => $rowDef )
+
+        $rowsNode = $doc->createElement( 'rows' );
+        $rowsNode->setAttribute( 'number', count( $matrixValue['rows'] ) );
+
+        $root->appendChild( $rowsNode );
+
+        foreach ( $matrixValue['rows'] as $row )
         {
-            foreach ( $rowDef as $data )
+            foreach ( $row as $value )
             {
-                $dataElement = $domDoc->createElement( 'c', $data );
-                $root->appendchild( $dataElement );
+                $cNode = $doc->createElement( 'c' );
+                $valueNode = $doc->createTextNode( $value );
+                $cNode->appendChild( $valueNode );
+
+                $root->appendChild( $cNode );
+
+                unset( $cNode );
+                unset( $valueNode );
             }
         }
-        $domDoc->appendChild( $root );
-        return $domDoc->saveXML();
+        return $doc->saveXML();
     }
 
     /**
-     * @param string $xmlstring
-     * @todo throw exception on invalid xml?
+     * Restores an author Value object from $xmlString
+     *
+     * @param string $xmlString XML String stored in storage engine
+     *
+     * @return \eZ\Publish\Core\FieldType\Author\Value
      */
-    protected function restoreFromXmlString( $xmlString )
+    private function restoreValueFromXmlString( $xmlString )
     {
+        /* Sample XML:
+        <?xml version="1.0" encoding="utf-8"?>
+        <ezmatrix>
+            <name/>
+            <columns number="4">
+                <column id="beverage" num="0">Beverage</column>
+                <column id="appetizer" num="1">Appetizer</column>
+                <column id="main" num="2">Main Course</column>
+                <column id="dessert" num="3">Dessert</column>
+            </columns>
+            <rows number="2"/>
+            <c>Water</c>
+            <c>Salad</c>
+            <c>Steak</c>
+            <c>Pie</c>
+            <c>Beer</c>
+            <c>Wings</c>
+            <c>Pizza</c>
+            <c>Ice Cream</c>
+        </ezmatrix>
+        */
         $dom = new DOMDocument( '1.0', 'utf-8' );
+
         $columns = array();
         $rows = array();
-        $name = '';
 
         if ( $dom->loadXML( $xmlString ) === true )
         {
-            foreach ( $dom->getElementsByTagName( 'name' ) as $name )
+            foreach ( $dom->getElementsByTagName( 'column' ) as $column )
             {
-                $name = $name->textContent;
-                break;
-            }
-
-            foreach ( $dom->getElementsByTagName( 'column' ) as $colDef )
-            {
-                $columns[$colDef->getAttribute( 'num' )] = array(
-                    'name' => $colDef->textContent,
-                    'identifier' => $colDef->getAttribute( 'id' )
+                $columns[] = array(
+                    'num' => $column->getAttribute( 'num' ),
+                    'id' => $column->getAttribute( 'id' ),
+                    'name' => $column->nodeValue
                 );
             }
-            $colcount = count( $columns );
-            $colindexes = array_keys( $columns );
 
-            // Q: Are these validations necessary here, or is this left to FieldType?
-            /// @todo validate $colcount vs. "number" attribute of "columns" element
-            /// @todo validate: $colcount != 0
-
-            $row = array();
             $i = 0;
-            foreach ( $dom->getElementsByTagName( 'c' ) as $data )
+            $columnLength = count( $columns );
+            $row = array();
+            foreach ( $dom->getElementsByTagName( 'c' ) as $rowItem )
             {
-                $row[$colindexes[$i++]] = $data->textContent;
-                if ( $i == $colcount )
+                $columnId = $columns[$i]['id'];
+                $row[$columnId] = (string)$rowItem->nodeValue;
+
+                $i++;
+                if ( $i >= $columnLength )
                 {
                     $rows[] = $row;
                     $row = array();
                     $i = 0;
                 }
             }
-
-            /// @todo validate: $rowcount vs. "number" attribute of "rows" element
-        }
-
-        return array( 'rows' => $rows, 'columns' => $columns, 'name' => $name );
-    }
-
-    protected function generateDefinitionXmlString( array $colDefs )
-    {
-        $domDoc = new DOMDocument( '1.0', 'utf-8' );
-        $root =  $domDoc->createElement( 'ezmatrix' );
-        foreach( $colDefs as $idx => $colDef )
-        {
-            $colElement = $domDoc->createElement( 'column-name', $colDef['name'] );
-            $colElement->setAttribute( 'id', $colDef['identifier'] );
-            $colElement->setAttribute( 'idx', $idx );
-            $root->appendchild( $colElement );
-        }
-        $domDoc->appendChild( $root );
-        return $domDoc->saveXML();
-    }
-
-    /**
-     * @param string $xmlstring
-     * @todo throw exception on invalid xml?
-     */
-    protected function restoreDefinitionFromXmlString( $xmlString )
-    {
-        $dom = new DOMDocument( '1.0', 'utf-8' );
-        $columns = array();
-
-        if ( $dom->loadXML( $xmlString ) === true )
-        {
-            foreach ( $dom->getElementsByTagName( 'column-name' ) as $coldef )
+            if ( count( $row ) )
             {
-                $columns[$coldef->getAttribute( 'idx' )] = array(
-                    'identifier' => $coldef->getAttribute( 'id' ),
-                    'name' => $coldef->textContent
-                );
+                $rows[] = $row;
             }
         }
 
-        return $columns;
+        return array( 'rows' => $rows, 'columns' => $columns );
     }
 }

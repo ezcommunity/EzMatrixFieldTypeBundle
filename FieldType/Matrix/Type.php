@@ -1,26 +1,75 @@
 <?php
 /**
- * @copyright Copyright (C) 2013 eZ Systems AS. All rights reserved.
- * @license http://ez.no/eZPublish/Licenses/eZ-Trial-and-Test-License-Agreement-eZ-TTL-v2.0 eZ Trial and Test License Agreement Version 2.0
+ * Matrix FieldType
+ * User: joe
+ * Date: 12/12/13
+ * Time: 8:59 PM
  *
- * @todo implement validation based on fieldDefinition
- * @todo implement search capabilities
+ * @copyright Copyright (C) 1999-2013 eZ Systems AS. All rights reserved.
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
+ * @version //autogentag//
  */
 
 namespace EzSystems\MatrixBundle\FieldType\Matrix;
 
 use eZ\Publish\Core\FieldType\FieldType;
+use eZ\Publish\Core\FieldType\Value as CoreValue;
 use eZ\Publish\SPI\FieldType\Value as SPIValue;
-use eZ\Publish\Core\FieldType\Value as BaseValue;
-use eZ\Publish\Core\Base\Exceptions\InvalidArgumentType;
 
 /**
- * The Matrix (ezmatrix) field type.
+ * Matrix Field Type
+ *
+ * This type implements the ezmatrix field type.
+ *
+ * Valid hash format:
+ *
+ * <code>
+ * $hash = array(
+ *       'columns' => array(
+ *           array(
+ *               'id' => 'make',
+ *               'name' => 'Make',
+ *               'num' => 0
+ *           ),
+ *           array(
+ *               'id' => 'model',
+ *               'name' => 'Model',
+ *               'num' => 1
+ *           ),
+ *           array(
+ *               'id' => 'year',
+ *               'name' => 'Year',
+ *               'num' => 2
+ *           )
+ *       ),
+ *       'rows' => array(
+ *           array(
+ *               'make' => 'Porsche',
+ *               'model' => '911',
+ *               'year' => '2001'
+ *           ),
+ *           array(
+ *               'make' => 'Lamborghini',
+ *               'model' => 'Diablo',
+ *               'year' => '2005'
+ *           )
+ *       )
+ *    );
+ * </code>
+ *
+ * @package EzSystems\MatrixBundle\FieldType\Matrix
  */
+
 class Type extends FieldType
 {
     /**
-     * Return the field type identifier for this field type
+     * Returns the field type identifier for this field type
+     *
+     * This identifier should be globally unique and the implementer of a
+     * FieldType must take care for the uniqueness. It is therefore recommended
+     * to prefix the field-type identifier by a unique string that identifies
+     * the implementer. A good identifier could for example take your companies main
+     * domain name as a prefix in reverse order.
      *
      * @return string
      */
@@ -30,70 +79,36 @@ class Type extends FieldType
     }
 
     /**
-     * Returns the name of the given field value.
-     *
-     * It will be used to generate content name and url alias if current field is designated
-     * to be used in the content name/urlAlias pattern.
-     *
-     * @param \EzSystems\MatrixBundle\FieldType\Matrix\Value $value
-     *
-     * @return string
-     */
-    public function getName( SPIValue $value )
-    {
-        return $value->name;
-    }
-
-    /**
-     * Returns the fallback default value of field type when no such default
-     * value is provided in the field definition in content types.
-     *
-     * @return \EzSystems\MatrixBundle\FieldType\Matrix\Value
-     */
-    public function getEmptyValue()
-    {
-        return new Value( array() );
-    }
-
-    /**
-     * Returns information for FieldValue->$sortKey relevant to the field type.
-     *
-     * @return array
-     */
-    protected function getSortInfo( BaseValue $value )
-    {
-        return false;
-    }
-
-    /**
      * Inspects given $inputValue and potentially converts it into a dedicated value object.
      *
-     * In the value:
-     * - We store rows as indexed php arrays.
-     * - And column names as well, for a single reason: PAPI does not allow us to
-     *   put col names in serialized format if they are not here but only in fieldDefinition...
+     * If given $inputValue could not be converted or is already an instance of dedicate value object,
+     * the method should simply return it.
      *
-     * Pesky little detail: there is nothing in original datatype which prevents
-     * the column indexes to be numeric but start from above 0, or not be successive.
-     * This poses a problem in tohash/fromhash
+     * This is an operation method for {@see acceptValue()}.
+     *
+     * Example implementation:
+     * <code>
+     *  protected function createValueFromInput( $inputValue )
+     *  {
+     *      if ( is_array( $inputValue ) )
+     *      {
+     *          $inputValue = \eZ\Publish\Core\FieldType\CookieJar\Value( $inputValue );
+     *      }
+     *
+     *      return $inputValue;
+     *  }
+     * </code>
+     *
+     * @param mixed $inputValue
+     *
+     * @return mixed The potentially converted input value.
      */
     protected function createValueFromInput( $inputValue )
     {
-        if ( is_array( $inputValue ) && isset( $inputValue['columns'] ) )
+        if ( is_array( $inputValue ) )
         {
-            $inputValue = new Value(
-                $inputValue['columns'],
-                isset( $inputValue['rows'] ) ? $inputValue['rows'] : array(),
-                isset( $inputValue['name'] ) ? $inputValue['name'] : '' );
+            $inputValue = new Value( $inputValue );
         }
-        /*else if ( !$inputValue instanceof Value )
-        {
-            throw new InvalidArgumentType(
-                '$inputValue',
-                'Ez\\MatrixBundle\\FieldType\\Matrix\\Value',
-                $inputValue
-            );
-        }*/
 
         return $inputValue;
     }
@@ -120,170 +135,133 @@ class Type extends FieldType
      *
      * @throws \eZ\Publish\API\Repository\Exceptions\InvalidArgumentException If the value does not match the expected structure.
      *
-     * @param \EzSystems\MatrixBundle\FieldType\Matrix\Value $value
+     * @param \eZ\Publish\Core\FieldType\Value $value
      *
      * @return void
      */
-    protected function checkValueStructure( BaseValue $value )
+    protected function checkValueStructure( CoreValue $value )
     {
-        if ( !is_array( $value->columns ) )
-        {
-            throw new InvalidArgumentType(
-                "\$value->columns",
-                'array',
-                $value->columns
-            );
-        }
-        if ( !is_array( $value->rows ) )
-        {
-            throw new InvalidArgumentType(
-                "\$value->rows",
-                'array',
-                $value->rows
-            );
-        }
-
-        // data structure checks - done here to validate copied-over data
-        $cols = array();
-        foreach( $value->columns as $i => $col )
-        {
-            if ( !isset( $col['name'] ) || !isset( $col['identifier'] ) )
-            {
-                throw new InvalidArgumentType(
-                    '\$value->columns[' . $i .']',
-                    "['name':'...','identifier':'...']",
-                    $col
-                );
-            }
-            $cols[$i] = $col['identifier'];
-        }
-        // consistency checks: same number of cols for each row, same indexes
-        foreach( $value->rows as $i => $row )
-        {
-            if ( array_diff_key( $cols, $row ) )
-            {
-                /// @todo implement specific extension type?
-                throw new InvalidArgumentType(
-                    '\$value->rows[' . $i .']',
-                    'array(same keys as in col definition)',
-                    $row
-                );
-            }
-        }
+        // TODO: Implement checkValueStructure() method.
     }
 
     /**
-     * @param \EzSystems\MatrixBundle\FieldType\Matrix\Value $value
+     * Returns a human readable string representation from the given $value
+     *
+     * It will be used to generate content name and url alias if current field
+     * is designated to be used in the content name/urlAlias pattern.
+     *
+     * The used $value can be assumed to be already accepted by {@link
+     * acceptValue()}.
+     *
+     * @param SPIValue $value
+     *
+     * @return string
      */
-    public function isEmptyValue( SPIValue $value )
+    public function getName( SPIValue $value )
     {
-        return $value === null || count( $value->rows ) == 0;
+        return $value->columns->getColumnNames();
+    }
+
+    /**
+     * Returns the empty value for this field type.
+     *
+     * This value will be used, if no value was provided for a field of this
+     * type and no default value was specified in the field definition. It is
+     * also used to determine that a user intentionally (or unintentionally) did not
+     * set a non-empty value.
+     *
+     * @return mixed
+     */
+    public function getEmptyValue()
+    {
+        return new Value();
     }
 
     /**
      * Converts an $hash to the Value defined by the field type
      *
+     * This is the reverse operation to {@link toHash()}. At least the hash
+     * format generated by {@link toHash()} must be converted in reverse.
+     * Additional formats might be supported in the rare case that this is
+     * necessary. See the class description for more details on a hash format.
+     *
      * @param mixed $hash
      *
-     * @return \EzSystems\MatrixBundle\FieldType\Matrix\Value $value
-     *
+     * @return mixed
      */
     public function fromHash( $hash )
     {
-        if ( $hash === null )
+        $rows = array();
+        $columns = array();
+
+        if ( isset( $hash['rows'] ) )
         {
-            return $this->getEmptyValue();
+            $rows = array_map(
+                function ( $row )
+                {
+                    return new Row( $row );
+                },
+                $hash['rows']
+            );
         }
 
-        return new Value( $hash['columns'], $hash['rows'], $hash['name'] );
+        if ( isset( $hash['columns'] ) )
+        {
+            $columns = array_map(
+                function ( $column )
+                {
+                    return new Column( $column );
+                },
+                $hash['columns']
+            );
+        }
+
+        return new Value( $rows, $columns );
     }
 
     /**
-     * Converts a $Value to a hash
+     * Implements the core of {@see acceptValue()}.
      *
-     * @param \EzSystems\MatrixBundle\FieldType\Matrix\Value $value
+     * @param mixed $inputValue
      *
-     * @return array
+     * @return \eZ\Publish\Core\FieldType\Value The potentially converted and structurally plausible value.
+     */
+    protected function internalAcceptValue( $inputValue )
+    {
+        // TODO: Implement internalAcceptValue() method.
+        // Get field type settings that define rows and columns
+        // Compare against data
+    }
+
+    /**
+     * Converts the given $value into a plain hash format
      *
-     * q: is this method needed, or will serialization work just fine without?
+     * Converts the given $value into a plain hash format, which can be used to
+     * transfer the value through plain text formats, e.g. XML, which do not
+     * support complex structures like objects. See the class level doc block
+     * for additional information. See the class description for more details on a hash format.
+     *
+     * @param mixed $value
+     *
+     * @return mixed
      */
     public function toHash( SPIValue $value )
     {
-        return array (
-            'columns' => $value->columns,
-            'rows' => $value->rows,
-            'name' => $value->name
+        return array(
+            'rows' => $value->rows->toArray(),
+            'columns' => $value->columns->toArray()
         );
     }
 
     /**
-     * Returns whether the field type is searchable
+     * Returns information for FieldValue->$sortKey relevant to the field type.
      *
-     * @return boolean
+     * @param \eZ\Publish\Core\FieldType\Value $value
+     *
+     * @return mixed
      */
-    public function isSearchable()
+    protected function getSortInfo( CoreValue $value )
     {
-        return true;
-    }
-
-    /**
-     * Inspects given $inputValue and potentially converts it into a dedicated value object.
-     *
-     * If given $inputValue could not be converted or is already an instance of dedicate value object,
-     * the method should simply return it.
-     *
-     * This is an operation method for {@see acceptValue()}.
-     *
-     * Example implementation:
-     * <code>
-     *  protected function createValueFromInput( $inputValue )
-     *  {
-     *      if ( is_array( $inputValue ) )
-     *      {
-     *          $inputValue = \eZ\Publish\Core\FieldType\CookieJar\Value( $inputValue );
-     *      }
-     *
-     *      return $inputValue;
-     *  }
-     * </code>
-     *
-     * @todo: The XSD needs to be defined for this class
-     *
-     * @param mixed $inputValue
-     *
-     * @return mixed The potentially converted input value.
-     */
-    /*protected function createValueFromInput( $inputValue )
-    {
-        if ( is_string( $inputValue ) ) {
-            if ( empty( $inputValue ) ) {
-                $inputValue = Value::EMPTY_VALUE;
-            }
-            $inputValue = new EzXml( $inputValue );
-        }
-
-        if ( $inputValue instanceof Input )
-        {
-            $doc = new DOMDocument;
-            $doc->loadXML( $inputValue->getInternalRepresentation() );
-            $inputValue = new Value( $doc );
-        }
-
-        return $inputValue;
-    }*/
-
-
-    /**
-     * Helper function
-     *
-     * Pop quiz: what happens if someone uses '\' as glue?
-     */
-    public static function implodeAndEscape( $glue, array $values )
-    {
-        foreach( $values as &$val )
-        {
-            $val = str_replace( $glue, "\\$glue", str_replace( '\\', '\\\\', $val ) );
-        }
-        return implode( $glue, $values );
+        return (string) $value;
     }
 }

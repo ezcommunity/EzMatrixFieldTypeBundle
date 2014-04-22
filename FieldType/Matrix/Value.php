@@ -1,47 +1,63 @@
 <?php
 /**
- * @copyright Copyright (C) 2013 eZ Systems AS. All rights reserved.
- * @license http://ez.no/eZPublish/Licenses/eZ-Trial-and-Test-License-Agreement-eZ-TTL-v2.0 eZ Trial and Test License Agreement Version 2.0
+ * Value Object for Matrix FieldType
+ * User: joe
+ * Date: 12/12/13
+ * Time: 8:59 PM
+ *
+ * @copyright Copyright (C) 1999-2013 eZ Systems AS. All rights reserved.
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
+ * @version //autogentag//
  */
-
 namespace EzSystems\MatrixBundle\FieldType\Matrix;
 
 use eZ\Publish\Core\FieldType\Value as BaseValue;
 
 /**
- * Value for Matrix field type
+ * Class Value
+ * Represents the contents of a Matrix field
  *
- * @todo should we declare name, columns and rows as read-only properties?
+ * @package EzSystems\MatrixBundle\FieldType\Matrix
  */
 class Value extends BaseValue
 {
-    public $rows;
-    public $columns;
-    public $name;
-
 
     /**
-     * Construct a new Value object and initialize it
+     * @var RowCollection
      */
-    public function __construct( array $cols, array $rows = array(), $name = '' )
+    public $rows;
+
+    /**
+     * @var ColumnCollection
+     */
+    public $columns;
+
+    /**
+     * @param Row[] $rows
+     * @param Column[] $columns
+     */
+    public function __construct( array $rows = array(), $columns=array() )
     {
-        $this->columns = $cols;
-        $this->rows = $rows;
-        $this->name = $name;
+        $this->rows = new RowCollection( $rows );
+
+        if ( $columns )
+        {
+            $this->columns = new ColumnCollection( $columns );
+        }
+        else
+        {
+            $this->columns = ColumnCollection::createFromNames( $this->rows->columnIds );
+        }
     }
 
     /**
-     * @see \eZ\Publish\Core\FieldType\Value
+     * Returns a string representation of the field value.
      *
-     * @bug looses info (col names)
+     * @return string
      */
     public function __toString()
     {
-        $rows = array();
-        foreach( $this->rows as $row )
-        {
-            $rows[] = Type::implodeAndEscape( '|', $row );
-        }
-        return Type::implodeAndEscape( '&', $rows );
+        return (string)$this->columns . "\n" . (string)$this->rows;
     }
+
 }

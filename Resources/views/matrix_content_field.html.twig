@@ -1,0 +1,19 @@
+{% extends "EzPublishCoreBundle::content_fields.html.twig" %}
+{% block ezmatrix_field %}
+    {% spaceless %}
+        <table {{ block( 'field_attributes' ) }}>
+            <tr>
+                {% for column in field.value.columns %}
+                    <th>{{ column.name }}</th>
+                {% endfor %}
+            </tr>
+            {% for row in field.value.rows %}
+                <tr>
+                    {% for col in row.columns %}
+                        <td>{{ col }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    {% endspaceless %}
+{% endblock %}
