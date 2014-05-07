@@ -1,0 +1,3 @@
+ezmatrix_test:
+    pattern:  /ezmatrixtest/{contentId}
+    defaults: { _controller: EzSystemsMatrixBundle:Test:index }

@@ -1,0 +1,31 @@
+parameters:
+    ezpublish.fieldType.ezmatrix.class: EzSystems\MatrixBundle\FieldType\Matrix\Type
+    ezpublish.fieldType.ezmatrix.converter.class: EzSystems\MatrixBundle\Persistence\Legacy\Content\FieldValue\Converter\Matrix
+
+# no need for extra storage options
+#    ezpublish.fieldType.ezmatrix.externalStorage.class: EzSystems\MatrixBundle\FieldType\Matrix\EzMatrixStorage
+#    ezpublish.fieldType.ezmatrix.storage_gateway.class: EzSystems\MatrixBundle\FieldType\Matrix\EzMatrixStorage\Gateway\LegacyStorage
+
+    # inject our template to display the datatype
+    ezpublish.system.default.field_templates:
+        - {template: EzSystemsMatrixBundle::content_fields.html.twig, priority: 0}
+
+services:
+    ezpublish.fieldType.ezmatrix:
+        class: %ezpublish.fieldType.ezmatrix.class%
+        parent: ezpublish.fieldType
+        tags:
+            - {name: ezpublish.fieldType, alias: ezmatrix}
+    ezpublish.fieldType.ezmatrix.converter:
+        class: %ezpublish.fieldType.ezmatrix.converter.class%
+        tags:
+            - {name: ezpublish.storageEngine.legacy.converter, alias: ezmatrix, lazy: true, callback: '::create'}
+#    ezpublish.fieldType.ezmatrix.externalStorage:
+#        class: %ezpublish.fieldType.ezmatrix.externalStorage.class%
+#        arguments: [[]]
+#        tags:
+#            - {name: ezpublish.fieldType.externalStorageHandler, alias: ezmatrix}
+#    ezpublish.fieldType.ezmatrix.storage_gateway:
+#        class: %ezpublish.fieldType.ezmatrix.storage_gateway.class%
+#        tags:
+#            - {name: ezpublish.fieldType.externalStorageHandler.gateway, alias: ezmatrix, identifier: LegacyStorage}

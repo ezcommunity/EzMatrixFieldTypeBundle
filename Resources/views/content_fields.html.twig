@@ -1,0 +1,23 @@
+{% block ezmatrix_field %}
+{% spaceless %}
+    {% set field_value = field.value %}
+    <table {{ block( 'field_attributes' ) }}>
+        <thead>
+        <tr>
+        {% for col in field_value.columns %}
+            <th>{{ col.name }}</th>
+        {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for row in field_value.rows %}
+            <tr>
+            {% for cell in row %}
+                <td>{{ cell }}</td>
+            {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endspaceless %}
+{% endblock %}
