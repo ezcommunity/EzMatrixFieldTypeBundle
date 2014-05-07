@@ -9,7 +9,7 @@ namespace EzSystems\MatrixBundle\FieldType\Matrix;
 use eZ\Publish\Core\FieldType\Value as BaseValue;
 
 /**
- * Value for Matrix field typ
+ * Value for Matrix field type
  *
  * @todo should we declare name, columns and rows as read-only properties?
  */

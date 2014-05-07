@@ -20,6 +20,7 @@ services:
         class: %ezpublish.fieldType.ezmatrix.converter.class%
         tags:
             - {name: ezpublish.storageEngine.legacy.converter, alias: ezmatrix, lazy: true, callback: '::create'}
+
 #    ezpublish.fieldType.ezmatrix.externalStorage:
 #        class: %ezpublish.fieldType.ezmatrix.externalStorage.class%
 #        arguments: [[]]

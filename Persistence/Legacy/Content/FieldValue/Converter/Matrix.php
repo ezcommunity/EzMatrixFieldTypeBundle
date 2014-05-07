@@ -6,13 +6,13 @@
 
 namespace EzSystems\MatrixBundle\Persistence\Legacy\Content\FieldValue\Converter;
 
-use eZ\Publish\Core\Persistence\Legacy\Content\FieldValue\Converter,
-    eZ\Publish\SPI\Persistence\Content\FieldValue,
-    eZ\Publish\Core\Persistence\Legacy\Content\StorageFieldValue,
-    eZ\Publish\SPI\Persistence\Content\Type\FieldDefinition,
-    eZ\Publish\Core\Persistence\Legacy\Content\StorageFieldDefinition,
-    eZ\Publish\Core\FieldType\FieldSettings,
-    DOMDocument;
+use eZ\Publish\Core\Persistence\Legacy\Content\FieldValue\Converter;
+use eZ\Publish\SPI\Persistence\Content\FieldValue;
+use eZ\Publish\Core\Persistence\Legacy\Content\StorageFieldValue;
+use eZ\Publish\SPI\Persistence\Content\Type\FieldDefinition;
+use eZ\Publish\Core\Persistence\Legacy\Content\StorageFieldDefinition;
+use eZ\Publish\Core\FieldType\FieldSettings;
+use DOMDocument;
 
 class Matrix implements Converter
 {
@@ -60,7 +60,7 @@ class Matrix implements Converter
     public function toStorageFieldDefinition( FieldDefinition $fieldDef, StorageFieldDefinition $storageDef )
     {
         /// @todo what about empty value???
-        $storageDefinition->dataText5 = $this->generateDefinitionXmlString( $fieldDef->fieldTypeConstraints->fieldSettings['columns'] );
+        $storageDef->dataText5 = $this->generateDefinitionXmlString( $fieldDef->fieldTypeConstraints->fieldSettings['columns'] );
         $storageDef->dataInt1 = $fieldDef->fieldTypeConstraints->fieldSettings['defaultRows'];
     }
 
@@ -73,9 +73,9 @@ class Matrix implements Converter
     public function toFieldDefinition( StorageFieldDefinition $storageDef, FieldDefinition $fieldDef )
     {
         $cols = array();
-        if ( !empty( $storageDefinition->dataText5 ) )
+        if ( !empty( $storageDef->dataText5 ) )
         {
-            $cols = $this->restoreDefinitionFromXmlString( $storageDefinition->dataText5 );
+            $cols = $this->restoreDefinitionFromXmlString( $storageDef->dataText5 );
         }
 
         $fieldDef->fieldTypeConstraints->fieldSettings = new FieldSettings(

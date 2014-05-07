@@ -21,7 +21,7 @@ class TestController extends Controller
             {
                 if ( $fieldDefinition->fieldTypeIdentifier == 'ezmatrix' )
                 {
-                    $fieldType = $fieldTypeService->getFieldType( $fieldDefinition->fieldTypeIdentifier );
+                    //$fieldType = $fieldTypeService->getFieldType( $fieldDefinition->fieldTypeIdentifier );
                     $field = $content->getField( $fieldDefinition->identifier );
 
                     return $this->render(
@@ -30,7 +30,7 @@ class TestController extends Controller
                 }
 
             }
-            return "No ezmatrix attri9bute found for content $contentId";
+            return "No ezmatrix attribute found for content $contentId";
         }
         catch ( \eZ\Publish\API\Repository\Exceptions\NotFoundException $e )
         {
