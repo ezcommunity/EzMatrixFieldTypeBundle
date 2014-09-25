@@ -372,16 +372,27 @@ class MatrixTest extends FieldTypeTest
     }
 
     /**
-     * Test the name output (expect comma-delimited list of column names)
+     * Returns the identifier of the field type under test.
+     *
+     * @return string
      */
-    public function testGetName()
+    protected function provideFieldTypeIdentifier()
     {
-        $fieldType = $this->getFieldTypeUnderTest();
-        $value = new MatrixValue( $this->getSingleRow(), $this->getColumnConfig() );
-
-        $name = $fieldType->getName( $value );
-
-        self::assertEquals( 'name, quest, colour', $name );
+        return 'ezmatrix';
     }
 
+    /**
+     * Provides data for the getName() test.
+     *
+     * @return array
+     */
+    public function provideDataForGetName()
+    {
+        $value = new MatrixValue( $this->getSingleRow(), $this->getColumnConfig() );
+
+        return array(
+            array( $this->getEmptyValueExpectation(), '' ),
+            array( $value, 'name, quest, colour' )
+        );
+    }
 }
