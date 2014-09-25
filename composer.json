@@ -2,12 +2,16 @@
     "name": "ezsystems/ez-matrix-bundle",
     "description": "EzMatrix FieldType for eZ Publish Platform",
     "license": "GPL-2.0",
+    "keywords": ["ezpublish", "ezmatrix"],
     "authors": [
         {
             "name": "eZ Community & eZ Systems",
             "homepage": "https://github.com/ezcommunity/EzMatrixFieldTypeBundle/graphs/contributors"
         }
     ],
+    "replace": {
+        "blend/ez-matrix-bundle": "*"
+    },
     "minimum-stability": "dev",
     "require": {
         "php": ">=5.3.3",
