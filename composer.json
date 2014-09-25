@@ -1,11 +1,11 @@
 {
     "name": "ezsystems/ez-matrix-bundle",
-    "description": "Matrix FieldType for eZ Publish Platform",
+    "description": "EzMatrix FieldType for eZ Publish Platform",
     "license": "GPL-2.0",
     "authors": [
         {
-            "name": "eZ Publish dev-team & eZ Community",
-            "homepage": "https://github.com/ezsystems/EzMatrixBundle/graphs/contributors"
+            "name": "eZ Community & eZ Systems",
+            "homepage": "https://github.com/ezcommunity/EzMatrixFieldTypeBundle/graphs/contributors"
         }
     ],
     "minimum-stability": "dev",
