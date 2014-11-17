@@ -100,7 +100,7 @@ class Matrix implements Converter
     /**
      * Generates XML string from $authorValue to be stored in storage engine
      *
-     * @param array $authorValue
+     * @param array $matrixValue
      *
      * @return string The generated XML string
      */
