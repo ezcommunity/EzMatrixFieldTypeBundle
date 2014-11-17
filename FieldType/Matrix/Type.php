@@ -177,6 +177,19 @@ class Type extends FieldType
     }
 
     /**
+     * Returns if the given $value is considered empty by the field type
+     *
+     * @param \EzSystems\MatrixBundle\FieldType\Matrix\Value $value
+     *
+     * @return boolean
+     */
+    public function isEmptyValue( SPIValue $value )
+    {
+        $aRows = $value->rows->getArrayCopy();
+        return empty( $aRows );
+    }
+
+    /**
      * Converts an $hash to the Value defined by the field type
      *
      * This is the reverse operation to {@link toHash()}. At least the hash
