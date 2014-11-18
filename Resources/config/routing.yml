@@ -1,3 +1,0 @@
-#my_ez_matrix_homepage:
-#    pattern:  /hello/{name}
-#    defaults: { _controller: EzSystemsMatrixBundle:Default:index }
