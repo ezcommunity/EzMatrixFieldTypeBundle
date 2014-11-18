@@ -15,7 +15,6 @@ use EzSystems\MatrixBundle\FieldType\Matrix\Column;
 use EzSystems\MatrixBundle\FieldType\Matrix\Row;
 use EzSystems\MatrixBundle\FieldType\Matrix\Type as MatrixType;
 use EzSystems\MatrixBundle\FieldType\Matrix\Value as MatrixValue;
-use EzSystems\MatrixBundle\FieldType\Matrix\Matrix;
 use eZ\Publish\Core\FieldType\FieldType;
 use eZ\Publish\Core\FieldType\Tests\FieldTypeTest;
 
