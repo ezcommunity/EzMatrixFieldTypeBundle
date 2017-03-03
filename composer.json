@@ -3,6 +3,7 @@
     "description": "EzMatrix FieldType for eZ Publish Platform",
     "license": "GPL-2.0",
     "keywords": ["ezpublish", "ezmatrix"],
+    "type": "ezplatform-bundle",
     "authors": [
         {
             "name": "eZ Community & eZ Systems",
