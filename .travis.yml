@@ -1,16 +1,22 @@
+## Run on container for speed and use trusty by default for latests packages
+dist: trusty
+sudo: false
+
 language: php
 
-# run tests on php misc php versions supported by eZ Publish 5.1 and up
-php:
-  - 5.3
-  - 5.4
-  - 5.5
-  - 5.6
-  - hhvm
-
 matrix:
+    include:
+        # 5.3 does not boot on trusty, so we use precise
+        - php: 5.3
+          sudo: required
+          dist: precise
+        - php: 5.4
+        - php: 5.5
+        - php: 5.6
+        - php: 7.0
+    fast_finish: true
     allow_failures:
-        - php: hhvm
+        - php: 7.0
 
 # test only master (+ Pull requests)
 branches:
@@ -18,11 +24,17 @@ branches:
     - master
 
 # install dependencies
-install: composer install --dev --prefer-dist
+before_script:
+    - phpenv config-rm xdebug.ini
+    # Setup GitHub key to avoid api rate limit (pure auth read only key, no rights, for use by ez repos only!)
+    - composer config -g github-oauth.github.com "d0285ed5c8644f30547572ead2ed897431c1fc09"
+    # Avoid memory issues on composer install
+    - echo "memory_limit=-1" >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
+    - travis_retry composer update --prefer-dist --no-interaction
 
 # execute phpunit as the script command
 script:
-  - php vendor/bin/phpunit -d memory_limit=-1 --colors
+  - php vendor/bin/phpunit --colors
 
 # disable mail notifications
 notification:
