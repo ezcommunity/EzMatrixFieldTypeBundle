@@ -36,7 +36,7 @@ class EzSystemsMatrixExtension extends Extension implements PrependExtensionInte
 
     public function prepend( ContainerBuilder $container )
     {
-        $config = Yaml::parse( __DIR__ . '/../Resources/config/field_templates.yml' );
+        $config = Yaml::parse( file_get_contents( __DIR__ . '/../Resources/config/field_templates.yml' ) );
 
         $container->prependExtensionConfig( 'ezpublish', $config );
 

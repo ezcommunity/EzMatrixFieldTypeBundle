@@ -5,12 +5,12 @@ parameters:
 
 services:
     ezpublish.fieldType.ezmatrix.converter:
-        class: %ezpublish.fieldType.ezmatrix.converter.class%
+        class: '%ezpublish.fieldType.ezmatrix.converter.class%'
         tags:
             - {name: ezpublish.storageEngine.legacy.converter, alias: ezmatrix, lazy: true, callback: '::create'}
 
     ezpublish.fieldType.ezmatrix:
-        class: %ezpublish.fieldType.ezmatrix.class%
+        class: '%ezpublish.fieldType.ezmatrix.class%'
         parent: ezpublish.fieldType
         tags:
             - {name: ezpublish.fieldType, alias: ezmatrix}
