@@ -1,6 +1,11 @@
 EzMatrixFieldTypeBundle
 =======================
 
+[![Build Status](https://img.shields.io/travis/ezcommunity/EzMatrixFieldTypeBundle.svg?style=flat-square&branch=master)](https://travis-ci.org/ezcommunity/EzMatrixFieldTypeBundle)
+[![Downloads](https://img.shields.io/packagist/dt/ezsystems/ez-matrix-bundle.svg?style=flat-square)](https://packagist.org/packages/ezsystems/ez-matrix-bundle)
+[![Latest version](https://img.shields.io/github/release/ezcommunity/EzMatrixFieldTypeBundle.svg?style=flat-square)](https://github.com/ezcommunity/EzMatrixFieldTypeBundle/releases)
+[![License](https://img.shields.io/github/license/ezcommunity/EzMatrixFieldTypeBundle.svg?style=flat-square)](LICENSE)
+
 Bundle provides ezmatrix field type for eZ Publish Platform 5.x and higher
 
 
