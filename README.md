@@ -22,6 +22,18 @@ From your [eZ Publish Platform](https://doc.ez.no/display/EZP/Installing+eZ+Publ
 ```
 php -d memory_limit=-1 composer.phar require --prefer-dist ezsystems/ez-matrix-bundle:dev-master
 ```
+Add the following in your `app/AppKernel.php` file:
+
+```php
+public function registerBundles()
+{
+    ...
+
+    $bundles[] = new EzSystems\MatrixBundle\EzSystemsMatrixBundle();
+
+    return $bundles;
+}
+```
 
 ### How to update content programmatically
 
