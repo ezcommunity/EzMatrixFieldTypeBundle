@@ -27,6 +27,17 @@ use DOMDocument;
 class Matrix implements Converter
 {
 
+    /** @var \Psr\Log\LoggerInterface $logger */
+    private $logger;
+
+    /**
+     * Matrix constructor.
+     */
+    public function __construct(LoggerInterface $logger = null )
+    {
+        $this->logger = $logger;
+    }
+
     /**
      * Factory for current class
      *
@@ -210,7 +221,15 @@ class Matrix implements Converter
         $columns = array();
         $rows = array();
 
-        if ( $dom->loadXML( $xmlString ) === true )
+        if(is_null( $xmlString )){
+            if($this->logger){
+                $this->logger->warning('Unexpected null data_text value in ezmatrix field.');
+            }
+
+            return array( 'rows' => $rows, 'columns' => $columns );
+        }
+
+        if ($dom->loadXML( $xmlString ) === true )
         {
             foreach ( $dom->getElementsByTagName( 'column' ) as $column )
             {
