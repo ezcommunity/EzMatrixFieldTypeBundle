@@ -14,13 +14,13 @@ namespace EzSystems\MatrixBundle\Tests;
 use eZ\Publish\SPI\Persistence\Content\FieldValue;
 use eZ\Publish\Core\Persistence\Legacy\Content\StorageFieldValue;
 use EzSystems\MatrixBundle\Persistence\Legacy\Content\FieldValue\Converter\Matrix as MatrixConverter;
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
 use DOMDocument;
 
 /**
  * Test for the Matrix storage converter
  */
-class MatrixConverterTest extends PHPUnit_Framework_TestCase
+class MatrixConverterTest extends TestCase
 {
 
     /**
