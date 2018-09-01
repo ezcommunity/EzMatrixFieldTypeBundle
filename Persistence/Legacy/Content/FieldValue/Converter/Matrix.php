@@ -17,6 +17,7 @@ use eZ\Publish\Core\Persistence\Legacy\Content\StorageFieldValue;
 use eZ\Publish\SPI\Persistence\Content\FieldValue;
 use eZ\Publish\SPI\Persistence\Content\Type\FieldDefinition;
 use DOMDocument;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class Matrix
