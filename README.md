@@ -39,7 +39,7 @@ public function registerBundles()
 
 Here's an example on how to update the value of a matrix field for a content item. The field has two columns, and we are creating two rows of content:
 
-```
+```php
 $repository = $this->getContainer()->get( 'ezpublish.api.repository' );
 $contentService = $repository->getContentService();
 
