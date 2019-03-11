@@ -245,6 +245,23 @@ class MatrixTest extends FieldTypeTest
         );
     }
 
+    public function provideValidFieldSettings()
+    {
+        return array(
+            array(
+                array(
+                    'columnList' => array(
+                        array(
+                            'name' => 'Example',
+                            'identifier' => 'example',
+                            'index' => 0
+                        )
+                    )
+                )
+            )
+        );
+    }
+
     /**
      * Provide input for the toHash() method
      *

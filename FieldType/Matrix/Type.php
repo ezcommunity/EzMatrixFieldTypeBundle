@@ -12,6 +12,7 @@
 namespace EzSystems\MatrixBundle\FieldType\Matrix;
 
 use eZ\Publish\Core\FieldType\FieldType;
+use eZ\Publish\Core\FieldType\ValidationError;
 use eZ\Publish\Core\FieldType\Value as CoreValue;
 use eZ\Publish\SPI\FieldType\Value as SPIValue;
 
@@ -275,5 +276,37 @@ class Type extends FieldType
     protected function getSortInfo( CoreValue $value )
     {
         return (string) $value;
+    }
+
+    /**
+     * Validates the fieldSettings of a FieldDefinitionCreateStruct or FieldDefinitionUpdateStruct.
+     *
+     * @param mixed $fieldSettings
+     *
+     * @return \eZ\Publish\SPI\FieldType\ValidationError[]
+     */
+    public function validateFieldSettings($fieldSettings)
+    {
+        $validationErrors = array();
+
+        if (!is_array($fieldSettings)) {
+            $validationErrors[] = new ValidationError('Field settings must be in form of an array');
+
+            return $validationErrors;
+        }
+
+        if (!isset($fieldSettings['columnList'])) {
+            $validationErrors[] = new ValidationError("Field settings must have `columnList` set");
+
+            return $validationErrors;
+        }
+
+        foreach ($fieldSettings['columnList'] as $columnData) {
+            if (!isset($columnData['name']) || !isset($columnData['identifier']) || !isset($columnData['index'])) {
+                $validationErrors[] = new ValidationError("Each column must have name, identifier, and index set");
+            }
+        }
+
+        return $validationErrors;
     }
 }

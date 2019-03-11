@@ -11,6 +11,8 @@
 
 namespace EzSystems\MatrixBundle\Tests;
 
+use eZ\Publish\Core\Persistence\Legacy\Content\StorageFieldDefinition;
+use eZ\Publish\SPI\Persistence\Content\Type\FieldDefinition;
 use eZ\Publish\SPI\Persistence\Content\FieldValue;
 use eZ\Publish\Core\Persistence\Legacy\Content\StorageFieldValue;
 use EzSystems\MatrixBundle\Persistence\Legacy\Content\FieldValue\Converter\Matrix as MatrixConverter;
@@ -38,6 +40,24 @@ class MatrixConverterTest extends TestCase
     {
         unset( $this->converter );
         parent::tearDown();
+    }
+
+    protected function getFieldSettingsHash()
+    {
+        return array(
+            'columnList' => array(
+                array(
+                    'name' => 'Name',
+                    'identifier' => 'name',
+                    'index' => 0
+                ),
+                array(
+                    'name' => 'Quest',
+                    'identifier' => 'quest',
+                    'index' => 1
+                )
+            ),
+        );
     }
 
     protected function getMultiRowMatrixHash()
@@ -73,6 +93,83 @@ class MatrixConverterTest extends TestCase
                 )
             )
         );
+    }
+
+    public function testToStorageFieldDefinition()
+    {
+        $fieldSettingsHash = $this->getFieldSettingsHash();
+        $fieldDefinition = new FieldDefinition();
+        $fieldDefinition->fieldTypeConstraints->fieldSettings = $fieldSettingsHash;
+        $storageFieldValue = new StorageFieldDefinition();
+
+        $this->converter->toStorageFieldDefinition($fieldDefinition, $storageFieldValue);
+        $doc = new DOMDocument('1.0', 'utf-8');
+
+        self::assertTrue($doc->loadXML($storageFieldValue->dataText5));
+        self::assertEquals($doc->documentElement->tagName, 'ezmatrix');
+
+        $columnsNodes = $doc->getElementsByTagName( 'column-name');
+
+        self::assertEquals( 2, $columnsNodes->length);
+
+        foreach ($doc->getElementsByTagName( 'column-name') as $i => $columnNode) {
+            $column = $fieldSettingsHash['columnList'][$i];
+            self::assertEquals($column['identifier'], $columnNode->getAttribute('id'));
+            self::assertEquals($column['index'], $columnNode->getAttribute('idx') );
+            self::assertEquals($column['name'], $columnNode->textContent);
+        }
+    }
+
+    public function testToFieldDefinition()
+    {
+        $storageFieldDefinition = new StorageFieldDefinition();
+        $storageFieldDefinition->dataText5 = <<<EOT
+<?xml version="1.0" encoding="utf-8"?>
+<ezmatrix>
+	<column-name id="name" idx="0">
+		Name
+	</column-name>
+	<column-name id="quest" idx="1">
+		Quest
+	</column-name>
+</ezmatrix>
+EOT;
+
+        $doc = new DOMDocument('1.0', 'utf-8');
+        self::assertTrue($doc->loadXML($storageFieldDefinition->dataText5));
+
+        $fieldDefinition = new FieldDefinition();
+        $this->converter->toFieldDefinition($storageFieldDefinition, $fieldDefinition);
+
+        self::assertArrayHasKey('columnList', $fieldDefinition->fieldTypeConstraints->fieldSettings);
+        self::assertInternalType('array', $fieldDefinition->fieldTypeConstraints->fieldSettings['columnList']);
+
+        $matrixHash = $fieldDefinition->fieldTypeConstraints->fieldSettings;
+
+        $columnNodes = $doc->getElementsByTagName( 'column-name');
+
+        $colSize = count($matrixHash['columnList']);
+
+        self::assertEquals($colSize, $columnNodes->length);
+
+        foreach ($matrixHash['columnList'] as $i => $column) {
+            $columnNode = $columnNodes->item($i);
+
+            self::assertEquals(
+                $columnNode->textContent,
+                $column['name']
+            );
+
+            self::assertEquals(
+                $columnNode->attributes->getNamedItem('id')->nodeValue,
+                $column['identifier']
+            );
+
+            self::assertEquals(
+                $columnNode->attributes->getNamedItem('idx')->nodeValue,
+                $column['index']
+            );
+        }
     }
 
     public function testToStorageValue()
@@ -122,7 +219,6 @@ class MatrixConverterTest extends TestCase
             $row = array_values( $matrixHash['rows'][floor( $i / $colSize )] );
             self::assertEquals( $row[ $i % $colSize], $cNode->textContent );
         }
-
     }
 
     public function testToFieldValue()

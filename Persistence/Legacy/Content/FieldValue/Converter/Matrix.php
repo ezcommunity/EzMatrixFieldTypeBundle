@@ -11,6 +11,7 @@
 
 namespace EzSystems\MatrixBundle\Persistence\Legacy\Content\FieldValue\Converter;
 
+use eZ\Publish\Core\FieldType\FieldSettings;
 use eZ\Publish\Core\Persistence\Legacy\Content\FieldValue\Converter;
 use eZ\Publish\Core\Persistence\Legacy\Content\StorageFieldDefinition;
 use eZ\Publish\Core\Persistence\Legacy\Content\StorageFieldValue;
@@ -81,7 +82,7 @@ class Matrix implements Converter
      */
     public function toStorageFieldDefinition( FieldDefinition $fieldDef, StorageFieldDefinition $storageDef )
     {
-        // Nothing to store
+        $storageDef->dataText5 = $this->fieldDefinitionToString($fieldDef);
     }
 
     /**
@@ -92,6 +93,13 @@ class Matrix implements Converter
      */
     public function toFieldDefinition( StorageFieldDefinition $storageDef, FieldDefinition $fieldDef )
     {
+        $fieldDef->fieldTypeConstraints->fieldSettings = new FieldSettings(
+            array
+            (
+                'columnList' => $this->decodeFieldDefinition($storageDef->dataText5)
+            )
+        );
+
         $fieldDef->defaultValue->data = array();
     }
 
@@ -107,6 +115,65 @@ class Matrix implements Converter
     public function getIndexColumn()
     {
         return false;
+    }
+
+    /**
+     * @param \eZ\Publish\SPI\Persistence\Content\Type\FieldDefinition $fieldDefinition
+     *
+     * @return string
+     */
+    private function fieldDefinitionToString(FieldDefinition $fieldDefinition)
+    {
+        $doc = new DOMDocument('1.0', 'utf-8');
+        $root = $doc->createElement("ezmatrix");
+        $doc->appendChild($root);
+
+        if (!isset($fieldDefinition->fieldTypeConstraints->fieldSettings['columnList'])) {
+            $xml = $doc->saveXML();
+            return $xml;
+        }
+
+        foreach ($fieldDefinition->fieldTypeConstraints->fieldSettings['columnList'] as $columnData) {
+            $columnNameNode = $doc->createElement('column-name');
+            $columnNameNode->appendChild($doc->createTextNode($columnData['name']));
+            $columnNameNode->setAttribute('id', $columnData['identifier']);
+            $columnNameNode->setAttribute('idx', $columnData['index']);
+            $root->appendChild($columnNameNode);
+            unset($columnNameNode);
+            unset($textNode);
+        }
+
+        $xml = $doc->saveXML();
+
+        return $xml;
+    }
+
+    /**
+     * @param string $xmlString
+     *
+     * @return array
+     */
+    private function decodeFieldDefinition($xmlString)
+    {
+        $dom = new DOMDocument('1.0', 'utf-8');
+
+        if (strlen($xmlString) === 0) {
+            return array();
+        }
+
+        $success = $dom->loadXML($xmlString);
+        $columns = $dom->getElementsByTagName("column-name");
+
+        $columnList = array();
+        foreach ($columns as $columnElement) {
+            $columnList[] = array(
+                'name' => $columnElement->textContent,
+                'identifier' => $columnElement->getAttribute('id'),
+                'index' =>  $columnElement->getAttribute('idx') )
+            ;
+        }
+
+        return $columnList;
     }
 
     /**
