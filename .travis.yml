@@ -1,8 +1,12 @@
 ## Run on container for speed and use trusty by default for latests packages
-dist: trusty
+dist: xenial
 sudo: false
 
 language: php
+
+cache:
+  directories:
+    - "$HOME/.composer/cache"
 
 matrix:
     include:
@@ -10,6 +14,7 @@ matrix:
         - php: 7.0
         - php: 7.1
         - php: 7.2
+        - php: 7.3
 
 # test only master (+ Pull requests)
 branches:
@@ -35,4 +40,4 @@ notification:
 
 # reduce depth (history) of git checkout
 git:
-  depth: 30
+  depth: 2
