@@ -213,6 +213,18 @@ class Matrix implements Converter
 
         $root->appendChild( $doc->createElement( 'name' ) );
 
+        if (!isset($matrixValue['columns'])) {
+            $columns = $doc->createElement( 'columns' );
+            $columns->setAttribute( 'number', 0 );
+            $root->appendChild( $columns );
+
+            $rowsNode = $doc->createElement( 'rows' );
+            $rowsNode->setAttribute( 'number', 0 );
+            $root->appendChild( $rowsNode );
+
+            return $doc->saveXML();
+        }
+
         $columns = $doc->createElement( 'columns' );
         $columns->setAttribute( 'number', count( $matrixValue['columns'] ) );
 
