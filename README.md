@@ -8,14 +8,9 @@ EzMatrixFieldTypeBundle
 
 Bundle provides ezmatrix field type for eZ Publish Platform 5.x and higher
 
-⛔️ **DEPRECATED:** As of 2.5 there is now bundled a [newer version](https://github.com/ezsystems/ezplatform-matrix-fieldtype) avaiable from eZ with full support, migration, UI editing and more. ⛔️
+⛔️ **Status DEPRECATED:** As of 2.5 there is now bundled a [newer version](https://github.com/ezsystems/ezplatform-matrix-fieldtype) avaiable from eZ with full support, migration, UI editing and more. ⛔️
 
-
-#### Status: Incubation
-
-Project is in incubation (stabilization) to be bundled with eZ Publish Platform
-and supported by eZ Systems, when that happens project will be moved to ezsystems
-organization and made part of future eZ Publish Platform releases.
+_This bundle can and should be used on earlier versions, but will not recive support for use in 1.x or 2.x UI or full API support, so UI editing is limited to use via legacy bridge/bundle._
 
 ### Install
 
